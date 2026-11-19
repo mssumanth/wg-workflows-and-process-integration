@@ -3,6 +3,10 @@ name: Website
 # Pull requests build and test the site. Pushes to main also publish it to
 # GitHub Pages (Settings → Pages → Source: GitHub Actions). The site is built
 # from the Markdown under workstreams/, so a change there rebuilds it.
+#
+# A manual run (Actions → Website → Run workflow) also publishes, from whichever
+# branch you pick. The github-pages environment's deployment-branch rule still
+# decides which branches may actually deploy; by default that is main only.
 
 on:
   push:
@@ -37,13 +41,13 @@ jobs:
       - name: Build
         run: node site/build.mjs
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
-        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        if: (github.ref == 'refs/heads/main' && github.event_name != 'pull_request') || github.event_name == 'workflow_dispatch'
         with:
           path: site/dist
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: (github.ref == 'refs/heads/main' && github.event_name != 'pull_request') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       pages: write
